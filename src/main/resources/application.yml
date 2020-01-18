@@ -1,0 +1,17 @@
+micronaut:
+  router:
+    static-resources:
+      default:
+        enabled: true
+        paths: file:ui
+  server:
+    cors:
+      # only needed when doing front end dev on port 3000
+      enabled: ${CORS_ENABLED:true}
+      configurations:
+        all:
+          allowedOrigins:
+            - http://localhost:3000
+endpoints:
+  health:
+    #details-visible: ANONYMOUS
