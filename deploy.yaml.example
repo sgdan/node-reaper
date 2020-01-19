@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: node-reaper
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::AWS_ACCOUNT_ID:role/IAM_ROLE_NAME
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-reaper
+  labels:
+    app: node-reaper
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: node-reaper
+  template:
+    metadata:
+      labels:
+        app: node-reaper
+    spec:
+      serviceAccountName: node-reaper
+      containers:
+        - name: node-reaper
+          image: sgdan/node-reaper:latest
+          env:
+            - name: CORS_ENABLED
+              value: "false"

@@ -16,3 +16,7 @@ caches
 daemon
 native
 notifications
+.terraform*
+*.tfvars
+terraform.tfstate*
+deploy.yaml
