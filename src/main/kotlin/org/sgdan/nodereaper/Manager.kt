@@ -17,7 +17,6 @@ sealed class Manager() {
     class UpdateNode(val id: String,
                      val status: NodeStatus) : Manager()
 
-    class RemoveNode(val id: String) : Manager()
     class GetStatus(val job: CompletableDeferred<Status>) : Manager()
     class Extend(val id: String,
                  val job: CompletableDeferred<Status>) : Manager()
@@ -39,18 +38,19 @@ fun CoroutineScope.managerActor(ec2: Ec2) = actor<Manager> {
             live.minus(existing).forEach {
                 actors[it] = nodeActor(it, ec2, channel)
             }
+
+            // remove actors for nodes not in the list
+            existing.minus(live).forEach {
+                actors.remove(it)?.close()
+                statuses.remove(it)
+                log.info("Node $it was removed")
+            }
         } catch (e: Exception) {
             log.error { "Unable to update nodes: ${e.message}" }
         }
 
         is Manager.UpdateNode -> {
             statuses[msg.id] = msg.status
-        }
-
-        is Manager.RemoveNode -> {
-            actors.remove(msg.id)?.close()
-            statuses.remove(msg.id)
-            log.info("Node ${msg.id} was removed")
         }
 
         is Manager.Extend -> {
@@ -65,7 +65,7 @@ fun CoroutineScope.managerActor(ec2: Ec2) = actor<Manager> {
         }
     }
 }.also {
-    tick(60, it, Manager.Update)
+    tick(30, it, Manager.Update)
 }
 
 /**
