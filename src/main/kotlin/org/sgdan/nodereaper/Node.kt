@@ -20,6 +20,7 @@ fun CoroutineScope.nodeActor(id: String,
                              manager: SendChannel<Manager>) = actor<Node> {
     lateinit var status: NodeStatus
 
+    log.info { "Node $id was added" }
     for (msg in channel) when (msg) {
         is Node.Update -> try {
             status = ec2.getNode(id)

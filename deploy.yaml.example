@@ -28,3 +28,30 @@ spec:
           env:
             - name: CORS_ENABLED
               value: "false"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-reaper
+spec:
+  ports:
+    - port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: node-reaper
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+  name: node-reaper-ingress
+spec:
+  rules:
+    - host: HOST
+      http:
+        paths:
+          - backend:
+              serviceName: node-reaper
+              servicePort: 8080
+            path: /
