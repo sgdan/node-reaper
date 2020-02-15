@@ -1,10 +1,12 @@
 package org.sgdan.nodereaper
 
+import io.micronaut.context.annotation.Parallel
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.GlobalScope
 import javax.inject.Singleton
 
 @Singleton
+@Parallel // Don't wait until the first request before starting up!
 class Backend {
     private val ec2: Ec2 = Ec2()
     private val manager =
