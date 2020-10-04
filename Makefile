@@ -1,31 +1,39 @@
-.PHONY: build
+frontend=@docker-compose run --rm -p 3000:3000 frontend
+backend=@docker-compose run --rm -p 8080:8080 backend
 
 # build and run using docker
-build:
+.build: Dockerfile
+	docker build --target frontend-dev -t node-reaper-frontend .
+	docker build --target backend-dev -t node-reaper-backend .
 	docker build . -t node-reaper
+	touch .build
 
-run: build
-	docker run --rm -it -v ~/.aws:/root/.aws -p 8080:8080 node-reaper
+run: .build
+	@docker run --rm -it -v ~/.aws:/root/.aws -p 8080:8080 node-reaper
 
-shell: build
-	docker run --rm -it node-reaper sh
+shell: .build
+	@docker run --rm -it node-reaper sh
+
 
 # for local development, start front and back end separately
-frontend-dev:
-	cd frontend && elm-app start
+frontend-dev: .build
+	$(frontend) elm-app start
 
-backend-dev:
-	docker-compose run -p 8080:8080 gradle gradle run
+backend-dev: .build
+	$(backend) gradle run
 
 
 # unit testing
-frontend-test:
-	cd frontend && elm-test
+frontend-test: .build
+	$(frontend) elm-test
 
-backend-test:
-	docker-compose run --rm gradle gradle test
+backend-test: .build
+	$(backend) gradle test
 
 
-# gradle shell for back end
-backend-shell:
-	docker-compose run --rm -p 8080:8080 gradle bash
+# shells for dev/debugging
+frontend-shell: .build
+	$(frontend) bash
+
+backend-shell: .build
+	$(backend) bash

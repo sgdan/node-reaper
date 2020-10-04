@@ -1,6 +1,12 @@
 # Front end: Elm
-FROM node:12.12.0 as frontend
-RUN yarn global add create-elm-app@4.1.2
+FROM node:14.12.0-alpine3.12 as frontend-dev
+RUN apk upgrade \
+    && apk --no-cache add bash
+RUN yarn global add create-elm-app@5.2.0
+RUN yarn global add elm-test@0.19.1-revision4
+RUN yarn global add elm@0.19.1-3
+
+FROM frontend-dev as frontend
 WORKDIR /app
 COPY frontend/elm.json .
 COPY frontend/public public/
@@ -8,7 +14,9 @@ COPY frontend/src src/
 RUN ELM_APP_URL=/reaper/ elm-app build
 
 # Back end: Micronaut/Kotlin/Gradle
-FROM gradle:6.0.1 as backend
+FROM gradle:6.6.1-jre14 as backend-dev
+
+FROM backend-dev as backend
 WORKDIR /nodereaper
 COPY build.gradle .
 COPY settings.gradle .
@@ -20,7 +28,7 @@ RUN gradle -g . shadowJar
 # e.g. /nodereaper/build/libs/node-reaper-1.0-SNAPSHOT-all.jar
 
 # Final image: OpenJDK
-FROM adoptopenjdk/openjdk13:jre-13.0.1_9-alpine
+FROM adoptopenjdk:14-jre-openj9
 WORKDIR /nodereaper
 COPY --from=frontend /app/build ./ui
 COPY --from=backend /nodereaper/build/libs/node-reaper-*-all.jar node-reaper.jar

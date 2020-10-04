@@ -6,3 +6,6 @@ elm-stuff
 gradle
 gradlew
 gradlew.bat
+.terraform
+frontend/elm-stuff
+frontend/node_modules

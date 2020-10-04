@@ -1,7 +1,13 @@
 version: "3.7"
 services:
-  gradle:
-    image: gradle:6.0.1
+  frontend:
+    image: node-reaper-frontend
+    volumes:
+      - ./frontend:/working
+    working_dir: /working
+
+  backend:
+    image: node-reaper-backend
     volumes:
       - .:/working
       - ~/.aws:/root/.aws
